@@ -9,12 +9,17 @@ export default function AdminDashboardPage() {
   const [session, setSession] = useState(undefined); // undefined = još provjeravamo
   const [news, setNews] = useState([]);
   const [tournaments, setTournaments] = useState([]);
+  const [players, setPlayers] = useState([]);
 
   const [newsForm, setNewsForm] = useState({
     title: '', tag: '', excerpt: '', format: '', status: '',
   });
   const [tourForm, setTourForm] = useState({
     name: '', description: '', format: '', tempo: '', starts_at: '', location: '',
+  });
+  const [playerForm, setPlayerForm] = useState({
+    full_name: '', title_category: '', rating_rapid: '', category_gp_type: '',
+    points_general_gp: '', points_category_gp: '', is_sk_dubrovnik_member: true,
   });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
@@ -38,8 +43,10 @@ export default function AdminDashboardPage() {
   async function loadData() {
     const { data: n } = await supabase.from('news').select('*').order('published_at', { ascending: false });
     const { data: t } = await supabase.from('tournaments').select('*').order('starts_at', { ascending: true });
+    const { data: p } = await supabase.from('profiles').select('*').order('points_general_gp', { ascending: false });
     setNews(n || []);
     setTournaments(t || []);
+    setPlayers(p || []);
   }
 
   useEffect(() => {
@@ -78,6 +85,36 @@ export default function AdminDashboardPage() {
     }
     setTourForm({ name: '', description: '', format: '', tempo: '', starts_at: '', location: '' });
     setMsg('Turnir spremljen.');
+    loadData();
+  }
+
+  async function submitPlayer(e) {
+    e.preventDefault();
+    setSaving(true);
+    setMsg('');
+    const payload = {
+      ...playerForm,
+      rating_rapid: playerForm.rating_rapid === '' ? null : Number(playerForm.rating_rapid),
+      points_general_gp: playerForm.points_general_gp === '' ? 0 : Number(playerForm.points_general_gp),
+      points_category_gp: playerForm.points_category_gp === '' ? 0 : Number(playerForm.points_category_gp),
+    };
+    const { error } = await supabase.from('profiles').insert([payload]);
+    setSaving(false);
+    if (error) {
+      setMsg('Greška: ' + error.message);
+      return;
+    }
+    setPlayerForm({
+      full_name: '', title_category: '', rating_rapid: '', category_gp_type: '',
+      points_general_gp: '', points_category_gp: '', is_sk_dubrovnik_member: true,
+    });
+    setMsg('Igrač spremljen.');
+    loadData();
+  }
+
+  async function deletePlayer(id) {
+    if (!confirm('Obrisati ovog igrača?')) return;
+    await supabase.from('profiles').delete().eq('id', id);
     loadData();
   }
 
@@ -231,6 +268,89 @@ export default function AdminDashboardPage() {
               )}
             </div>
             <button className="btn-danger" onClick={() => deleteTournament(t.id)}>Obriši</button>
+          </div>
+        ))}
+      </div>
+
+      {/* --- Unos igrača (poredak) --- */}
+      <div className="admin-card" style={{ marginTop: 30 }}>
+        <h1>Novi igrač</h1>
+        <form onSubmit={submitPlayer}>
+          <div className="field">
+            <label>Ime i prezime</label>
+            <input
+              value={playerForm.full_name}
+              onChange={(e) => setPlayerForm({ ...playerForm, full_name: e.target.value })}
+              required
+            />
+          </div>
+          <div className="field">
+            <label>Titula / kat.</label>
+            <input
+              placeholder="npr. FM, CM, 1. kat."
+              value={playerForm.title_category}
+              onChange={(e) => setPlayerForm({ ...playerForm, title_category: e.target.value })}
+            />
+          </div>
+          <div className="field">
+            <label>Rapid rejting</label>
+            <input
+              type="number"
+              value={playerForm.rating_rapid}
+              onChange={(e) => setPlayerForm({ ...playerForm, rating_rapid: e.target.value })}
+            />
+          </div>
+          <div className="field">
+            <label>Kategorija</label>
+            <input
+              placeholder="npr. Seniori, Veterani, U16"
+              value={playerForm.category_gp_type}
+              onChange={(e) => setPlayerForm({ ...playerForm, category_gp_type: e.target.value })}
+            />
+          </div>
+          <div className="field">
+            <label>Opći GP bodovi</label>
+            <input
+              type="number"
+              value={playerForm.points_general_gp}
+              onChange={(e) => setPlayerForm({ ...playerForm, points_general_gp: e.target.value })}
+            />
+          </div>
+          <div className="field">
+            <label>Bodovi u kategoriji</label>
+            <input
+              type="number"
+              value={playerForm.points_category_gp}
+              onChange={(e) => setPlayerForm({ ...playerForm, points_category_gp: e.target.value })}
+            />
+          </div>
+          <div className="field" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input
+              type="checkbox"
+              id="is_member"
+              style={{ width: 'auto' }}
+              checked={playerForm.is_sk_dubrovnik_member}
+              onChange={(e) => setPlayerForm({ ...playerForm, is_sk_dubrovnik_member: e.target.checked })}
+            />
+            <label htmlFor="is_member" style={{ marginBottom: 0, textTransform: 'none' }}>
+              Član kluba (prikazuje se u poretku)
+            </label>
+          </div>
+          <button className="btn-primary" type="submit" disabled={saving}>
+            Spremi igrača
+          </button>
+        </form>
+
+        {players.map((p) => (
+          <div className="admin-list-item" key={p.id}>
+            <div>
+              <strong>{p.full_name}</strong>
+              <div style={{ fontSize: '0.85rem', color: 'var(--ink-soft)' }}>
+                {p.title_category || '-'} · {p.category_gp_type || '-'} · {p.points_general_gp || 0} bodova
+                {!p.is_sk_dubrovnik_member && ' · (nije prikazan u poretku)'}
+              </div>
+            </div>
+            <button className="btn-danger" onClick={() => deletePlayer(p.id)}>Obriši</button>
           </div>
         ))}
       </div>
