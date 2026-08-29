@@ -59,6 +59,50 @@ create table if not exists tournament_registrations (
     registered_at timestamp default now()
 );
 
+-- ---------- players ----------
+-- Osnovni podaci o igraču. Rejtinzi NISU ovdje jer se mijenjaju mjesečno —
+-- oni žive u player_ratings (povijest po mjesecima), da stari turniri
+-- mogu prikazati rejting kakav je bio TADA, ne trenutni.
+
+create table if not exists players (
+    id serial primary key,
+    full_name text not null,
+    gender text,                        -- 'M' ili 'Ž'
+    title text,                         -- šahovska titula: GM, IM, FM, WGM, WIM, WFM, CM, WCM, bez titule...
+    club text,
+    category text,                      -- S65, S50, U20, U16, U12, U1800, Akademija
+    is_member boolean default true,     -- članstvo u ŠK Dubrovnik (da/ne)
+    general_gp_points numeric(6,1) default 0,   -- bodovi Opći GP
+    category_gp_points numeric(6,1) default 0,  -- bodovi Kategorijski GP (za tu kategoriju)
+    created_at timestamp default now()
+);
+
+-- ---------- player_ratings ----------
+-- Mjesečni snimak FIDE rejtinga po igraču. Novi red se dodaje svaki 1. u
+-- mjesecu — stari redovi ostaju netaknuti, pa prikaz starog turnira može
+-- povući rejting koji je vrijedio na taj datum (najnoviji snimak <= datum
+-- turnira), dok naslovnica/poredak prikazuje najnoviji snimak.
+
+create table if not exists player_ratings (
+    id serial primary key,
+    player_id int references players(id) on delete cascade,
+    effective_month date not null,      -- uvijek 1. u mjesecu, npr. 2026-09-01
+    fide_standard int,
+    fide_rapid int,
+    fide_blitz int,
+    created_at timestamp default now(),
+    unique (player_id, effective_month)
+);
+
+alter table players enable row level security;
+alter table player_ratings enable row level security;
+
+create policy "Javno čitanje players" on players for select using (true);
+create policy "Admin upravlja players" on players for all using (auth.role() = 'authenticated');
+
+create policy "Javno čitanje player_ratings" on player_ratings for select using (true);
+create policy "Admin upravlja player_ratings" on player_ratings for all using (auth.role() = 'authenticated');
+
 -- ---------- users ----------
 -- NAPOMENA: posebnu 'users' tablicu ne trebaš — admin login ide kroz
 -- ugrađeni Supabase Auth (Authentication -> Users u dashboardu).

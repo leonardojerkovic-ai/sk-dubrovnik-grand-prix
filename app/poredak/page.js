@@ -1,80 +1,39 @@
-export const dynamic = 'force-dynamic';
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '../../lib/supabaseClient';
+
+export const revalidate = 30;
+
+const CATEGORY_ORDER = ['Akademija', 'U12', 'U16', 'U20', 'U1800', 'S50', 'S65'];
 
 export default async function PoredakPage() {
-  // Inicijalizacija Supabase klijenta unutar funkcije da spriječimo grešku pri buildu
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const { data: players } = await supabase
+    .from('players')
+    .select('*')
+    .order('full_name', { ascending: true });
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return (
-      <PageShell>
-        <p className="error-msg">Greška: Nedostaju Supabase varijable okruženja na poslužitelju.</p>
-      </PageShell>
-    )
-  }
+  const { data: ratings } = await supabase
+    .from('player_ratings')
+    .select('*')
+    .order('effective_month', { ascending: false });
 
-  const supabase = createClient(supabaseUrl, supabaseAnonKey)
+  // najnoviji rejting po igraču
+  const latestRating = {};
+  (ratings || []).forEach((r) => {
+    if (!latestRating[r.player_id]) latestRating[r.player_id] = r;
+  });
 
-  // Dohvaćanje igrača iz baze: samo članovi ŠK Dubrovnik, poredani po Općem GP-u
-  const { data: dubrovnikStandings, error } = await supabase
-    .from('profiles')
-    .select('full_name, title_category, rating_rapid, category_gp_type, points_general_gp, points_category_gp')
-    .eq('is_sk_dubrovnik_member', true)
-    .order('points_general_gp', { ascending: false })
+  // grupiraj igrače po kategoriji
+  const byCategory = {};
+  (players || []).forEach((p) => {
+    const cat = p.category || 'Ostalo';
+    if (!byCategory[cat]) byCategory[cat] = [];
+    byCategory[cat].push(p);
+  });
 
-  if (error) {
-    return (
-      <PageShell>
-        <p className="error-msg">Greška pri dohvaćanju poretka: {error.message}</p>
-      </PageShell>
-    )
-  }
+  const categories = CATEGORY_ORDER.filter((c) => byCategory[c]);
+  Object.keys(byCategory).forEach((c) => {
+    if (!categories.includes(c)) categories.push(c);
+  });
 
-  return (
-    <PageShell>
-      <h1>Grand Prix Poredak — ŠK Dubrovnik</h1>
-      <p className="poredak-intro">Službena tablica poretka članova ŠK Dubrovnik za aktualnu sezonu.</p>
-
-      <div className="poredak-table-wrap">
-        <table className="poredak-table">
-          <thead>
-            <tr>
-              <th className="col-rank">#</th>
-              <th>Ime i prezime</th>
-              <th>Titula / Kat.</th>
-              <th>Kategorija</th>
-              <th className="col-num">Rapid Rejting</th>
-              <th className="col-num col-points">Opći GP Bodovi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dubrovnikStandings && dubrovnikStandings.length > 0 ? (
-              dubrovnikStandings.map((player, index) => (
-                <tr key={index}>
-                  <td className="col-rank">{index + 1}.</td>
-                  <td className="poredak-name">{player.full_name}</td>
-                  <td>{player.title_category || '-'}</td>
-                  <td className="poredak-muted">{player.category_gp_type || '-'}</td>
-                  <td className="col-num">{player.rating_rapid || 0}</td>
-                  <td className="col-num col-points">{player.points_general_gp || 0}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" className="poredak-empty">
-                  Trenutno nema unesenih članova ili bodova.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </PageShell>
-  )
-}
-
-function PageShell({ children }) {
   return (
     <>
       <header className="top">
@@ -92,9 +51,63 @@ function PageShell({ children }) {
         </div>
       </header>
 
-      <div className="poredak-page">{children}</div>
+      <div className="layout" style={{ gridTemplateColumns: '1fr' }}>
+        <main>
+          <h2>Poredak igrača</h2>
+
+          {categories.length === 0 && (
+            <p style={{ color: 'var(--ink-soft)' }}>Još nema unesenih igrača.</p>
+          )}
+
+          {categories.map((cat) => (
+            <div key={cat} style={{ marginBottom: 36 }}>
+              <h3 style={{ color: 'var(--red)', fontSize: '1.1rem', marginBottom: 12 }}>
+                {cat}
+              </h3>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.92rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid var(--navy)', textAlign: 'left' }}>
+                      <th style={{ padding: '8px 6px' }}>Igrač</th>
+                      <th style={{ padding: '8px 6px' }}>Klub</th>
+                      <th style={{ padding: '8px 6px' }}>Std</th>
+                      <th style={{ padding: '8px 6px' }}>Rapid</th>
+                      <th style={{ padding: '8px 6px' }}>Blitz</th>
+                      <th style={{ padding: '8px 6px' }}>Opći GP</th>
+                      <th style={{ padding: '8px 6px' }}>Kat. GP</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {byCategory[cat]
+                      .sort((a, b) => (b.category_gp_points || 0) - (a.category_gp_points || 0))
+                      .map((p) => {
+                        const r = latestRating[p.id];
+                        return (
+                          <tr key={p.id} style={{ borderBottom: '1px solid #d3e2ec' }}>
+                            <td style={{ padding: '8px 6px' }}>
+                              {p.title ? `${p.title} ` : ''}{p.full_name}
+                              {!p.is_member && (
+                                <span style={{ color: 'var(--ink-soft)', fontSize: '0.8rem' }}> (gost)</span>
+                              )}
+                            </td>
+                            <td style={{ padding: '8px 6px' }}>{p.club}</td>
+                            <td style={{ padding: '8px 6px' }}>{r?.fide_standard ?? '—'}</td>
+                            <td style={{ padding: '8px 6px' }}>{r?.fide_rapid ?? '—'}</td>
+                            <td style={{ padding: '8px 6px' }}>{r?.fide_blitz ?? '—'}</td>
+                            <td style={{ padding: '8px 6px' }}>{p.general_gp_points ?? 0}</td>
+                            <td style={{ padding: '8px 6px' }}>{p.category_gp_points ?? 0}</td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </main>
+      </div>
 
       <footer>© {new Date().getFullYear()} ŠK Dubrovnik Grand Prix</footer>
     </>
-  )
+  );
 }

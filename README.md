@@ -10,9 +10,17 @@ unos vijesti/turnira bez diranja koda.
 1. Idi na [supabase.com](https://supabase.com) i otvori (ili napravi) projekt.
 2. **SQL Editor** → **New query** → zalijepi sadržaj `schema.sql` iz ovog
    projekta → **Run**. Ovo stvara tablice `news`, `tournaments`,
-   `tournament_registrations`, `pages`, `page_content` i sigurnosna
-   pravila (RLS) tako da javnost može samo čitati, a admin (prijavljen)
-   može i uređivati.
+   `tournament_registrations`, `players`, `player_ratings`, `pages`,
+   `page_content` i sigurnosna pravila (RLS) tako da javnost može samo
+   čitati, a admin (prijavljen) može i uređivati.
+
+   **Ako si već prije pokrenuo/la stariju verziju sheme** (bez `players`
+   tablice ili sa starijom, jednostavnijom `players` tablicom), umjesto
+   toga pokreni `migration_players.sql` — on dodaje/zamjenjuje samo
+   `players` i `player_ratings`, ne dira ništa drugo. Ako već postoji
+   stara `players` tablica s drugačijim poljima, prvo pokreni
+   `drop table if exists players cascade;` pa onda cijeli
+   `migration_players.sql`.
 3. **Authentication → Users → Add user** — ovdje ručno dodaš svoj admin
    email i lozinku. To je tvoj login za `/admin/login` (nema potrebe za
    posebnom `users` tablicom ni ručnim hashiranjem lozinki).
@@ -61,6 +69,24 @@ app/
 lib/supabaseClient.js     — Supabase konekcija
 schema.sql                — SQL shema + RLS pravila + demo podaci
 ```
+
+## 5. Igrači i mjesečni rejting
+
+U admin panelu (`/admin/dashboard`) sad postoje dvije nove sekcije:
+
+- **Novi igrač** — unosiš ime i prezime, spol, titulu, klub, kategoriju
+  (S65, S50, U20, U16, U12, U1800, Akademija), članstvo u ŠK Dubrovnik
+  (da/ne), i bodove za Opći GP i Kategorijski GP.
+- **Mjesečni rejting igrača** — zasebna forma gdje odabereš igrača,
+  mjesec (uvijek 1. u mjesecu) i upišeš FIDE Standard/Rapid/Blitz.
+  Svaki mjesec se sprema kao **novi red** u `player_ratings`, ne
+  prepisuje prethodni — zato stari turniri i dalje mogu prikazati
+  rejting kakav je bio na taj datum, dok `/poredak` uvijek prikazuje
+  najnoviji.
+
+Javna stranica **`/poredak`** prikazuje sve igrače grupirane po
+kategoriji, s najnovijim rejtingom i GP bodovima, sortirano po
+kategorijskim GP bodovima.
 
 ## Sljedeći koraci (opcionalno)
 

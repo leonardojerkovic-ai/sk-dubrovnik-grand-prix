@@ -170,37 +170,6 @@ footer{
   text-align:center; padding:22px; font-size:0.85rem;
 }
 
-/* ---------- poredak (standings) ---------- */
-.poredak-page{
-  max-width:1000px; margin:0 auto; padding:48px 28px 70px;
-}
-.poredak-page h1{
-  font-size:1.9rem; font-weight:600; color:var(--navy); margin-bottom:10px;
-}
-.poredak-intro{ color:var(--ink-soft); margin-bottom:28px; }
-.poredak-table-wrap{
-  background:#fff; border:1px solid #d3e2ec; overflow-x:auto;
-}
-.poredak-table{ width:100%; border-collapse:collapse; text-align:left; }
-.poredak-table thead tr{ background:var(--sky-pale); }
-.poredak-table th{
-  padding:12px 14px; font-size:0.8rem; font-weight:600;
-  text-transform:uppercase; letter-spacing:0.04em; color:var(--navy);
-  border-bottom:1px solid #d3e2ec; white-space:nowrap;
-}
-.poredak-table td{
-  padding:12px 14px; border-bottom:1px solid #eaf0f5; font-size:0.95rem;
-}
-.poredak-table tbody tr:hover{ background:var(--sky-pale); }
-.poredak-table .col-rank{ width:44px; text-align:center; color:var(--ink-soft); font-weight:600; }
-.poredak-table .col-num{ text-align:right; color:var(--ink-soft); }
-.poredak-table .col-points{ font-weight:700; color:var(--red); }
-.poredak-name{ font-weight:600; color:var(--ink); }
-.poredak-muted{ color:var(--ink-soft); font-size:0.9rem; }
-.poredak-empty{
-  text-align:center; padding:30px; color:var(--ink-soft);
-}
-
 /* ---------- admin forms (nova, ali u istom duhu dizajna) ---------- */
 .admin-shell{
   max-width:640px; margin:0 auto; padding:60px 28px;
