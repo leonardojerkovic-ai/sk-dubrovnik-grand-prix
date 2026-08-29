@@ -14,7 +14,7 @@ Bodovi dvaju sustava nikada se ne zbrajaju niti uspoređuju.
 - Sezona počinje u rujnu 2026. i završava Prvenstvom Akademije u lipnju 2027.
 - Kvalifikacijska serija ima 6 turnira; finale je zaseban završni turnir.
 - Pravo na GP bodove temelji se na pravilniku i FIDE rapid rejtingu na prvom nastupu igrača u Akademiji u toj sezoni.
-- Za dobne kategorije Akademije projektna specifikacija koristi pravilo koje je definirao naručitelj: dob se određuje prema godini referentnog prvog turnira na kojem se igrač uključio u Akademiju i godištu igrača.
+- **Dobna kategorija igrača u Akademiji određuje se prema njegovoj dobi/godištu na prvom turniru Akademije na kojem se uključio u sezonu.** Referentna godina je godina tog prvog nastupa. Kategorija se zatim vodi za njegovu Akademijinu sezonu prema tom početnom određivanju.
 - Na službenoj ljestvici prikazuju se samo članovi ŠK Dubrovnik; rezultati ostalih sudionika ostaju u obračunu gdje je to propisano.
 
 **Napomena:** dostavljeni pravilnik GP Akademije u članku 20 navodi dob prema 1. siječnju godine u kojoj sezona počinje. Ova projektna specifikacija bilježi noviju poslovnu uputu naručitelja (prvi nastup u Akademiji); prije produkcijske objave pravilnika razliku treba uskladiti i u službenom dokumentu.
@@ -27,7 +27,7 @@ Bodovi dvaju sustava nikada se ne zbrajaju niti uspoređuju.
 
 ## 3. Dobne kategorije
 
-Za sezonu s godinom `G` i godištem igrača `B`:
+Za Dubrovnik GP sezonu s godinom `G` i godištem igrača `B`:
 - U kategorija: `G - B <= granica`
 - S kategorija: `G - B >= granica`
 
@@ -38,7 +38,7 @@ Za Dubrovnik GP 2027:
 - S50: dob >= 50
 - S65: dob >= 65
 
-Za GP Akademije 2026/27 referentna godina dobi vezana je uz prvi turnir Akademije na kojem se igrač uključio u sezoni, prema poslovnom pravilu naručitelja.
+U1800 je rejting-kategorija i ne određuje se prema godištu.
 
 ## 4. Kategorije Dubrovnik GP-a
 
@@ -49,8 +49,6 @@ Za GP Akademije 2026/27 referentna godina dobi vezana je uz prvi turnir Akademij
 - S50
 - S65
 - U1800
-
-U1800 je rejting-kategorija i ne određuje se prema godištu.
 
 ## 5. Povijesni podaci
 
