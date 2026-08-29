@@ -1,11 +1,21 @@
-export const dynamic = 'force-dynamic';import { createClient } from '@supabase/supabase-js'
-
-// Inicijalizacija Supabase klijenta
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const dynamic = 'force-dynamic';
+import { createClient } from '@supabase/supabase-js'
 
 export default async function PoredakPage() {
+  // Inicijalizacija Supabase klijenta unutar funkcije da spriječimo grešku pri buildu
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return (
+      <div className="p-8 text-center text-red-600">
+        Greška: Nedostaju Supabase varijable okruženja na poslužitelju.
+      </div>
+    )
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
   // Dohvaćanje igrača iz baze: samo članovi ŠK Dubrovnik, poredani po Općem GP-u
   const { data: dubrovnikStandings, error } = await supabase
     .from('profiles')
