@@ -1,8 +1,6 @@
-import { supabase } from '../lib/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 
-// Server Component - podaci se dohvaćaju na serveru prije slanja HTML-a klijentu,
-// isto kao što bi PHP izvršio upit prije nego ispiše stranicu.
-export const revalidate = 30; // stranica se osvježava iz baze najviše svakih 30s
+export const revalidate = 30;
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -10,23 +8,34 @@ function formatDate(dateStr) {
 }
 
 export default async function HomePage() {
-  const { data: news } = await supabase
-    .from('news')
-    .select('*')
-    .order('published_at', { ascending: false })
-    .limit(10);
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  let news = [];
+  let tournaments = [];
 
-  const { data: tournaments } = await supabase
-    .from('tournaments')
-    .select('*')
-    .order('starts_at', { ascending: true });
+  if (supabaseUrl && supabaseAnonKey) {
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    
+    const { data: newsData } = await supabase
+      .from('news')
+      .select('*')
+      .order('published_at', { ascending: false })
+      .limit(10);
+    news = newsData || [];
+
+    const { data: tournamentsData } = await supabase
+      .from('tournaments')
+      .select('*')
+      .order('starts_at', { ascending: true });
+    tournaments = tournamentsData || [];
+  }
 
   return (
     <>
       <header className="top">
         <div className="top-inner">
           <a href="/" className="brand">
-            {/* Zamijeni /logo.png stvarnim logom kluba (stavi ga u /public) */}
             <img className="mark" src="/logo.png" alt="ŠK Dubrovnik" />
             ŠK Dubrovnik Grand Prix
           </a>
@@ -74,7 +83,6 @@ export default async function HomePage() {
             </ul>
           </details>
 
-          {/* Nadolazeći turniri iz baze, umjesto ručno upisanog teksta */}
           {tournaments && tournaments.length > 0 && (
             <details open>
               <summary>Nadolazeći</summary>

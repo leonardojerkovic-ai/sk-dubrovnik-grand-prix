@@ -5,12 +5,12 @@ export default async function PoredakPage() {
   // Inicijalizacija Supabase klijenta unutar funkcije da spriječimo grešku pri buildu
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  
+
   if (!supabaseUrl || !supabaseAnonKey) {
     return (
-      <div className="p-8 text-center text-red-600">
-        Greška: Nedostaju Supabase varijable okruženja na poslužitelju.
-      </div>
+      <PageShell>
+        <p className="error-msg">Greška: Nedostaju Supabase varijable okruženja na poslužitelju.</p>
+      </PageShell>
     )
   }
 
@@ -25,44 +25,44 @@ export default async function PoredakPage() {
 
   if (error) {
     return (
-      <div className="p-8 text-center text-red-600">
-        Greška pri dohvaćanju poretka: {error.message}
-      </div>
+      <PageShell>
+        <p className="error-msg">Greška pri dohvaćanju poretka: {error.message}</p>
+      </PageShell>
     )
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-2 text-gray-800">Grand Prix Poredak — ŠK Dubrovnik</h1>
-      <p className="text-gray-600 mb-6">Službena tablica poretka članova ŠK Dubrovnik za aktualnu sezonu.</p>
+    <PageShell>
+      <h1>Grand Prix Poredak — ŠK Dubrovnik</h1>
+      <p className="poredak-intro">Službena tablica poretka članova ŠK Dubrovnik za aktualnu sezonu.</p>
 
-      <div className="overflow-x-auto border rounded-lg shadow-sm">
-        <table className="w-full text-left border-collapse">
+      <div className="poredak-table-wrap">
+        <table className="poredak-table">
           <thead>
-            <tr className="bg-slate-100 border-b text-gray-700 text-sm">
-              <th className="p-3 w-12 text-center">#</th>
-              <th className="p-3">Ime i prezime</th>
-              <th className="p-3">Titula / Kat.</th>
-              <th className="p-3">Kategorija</th>
-              <th className="p-3 text-right">Rapid Rejting</th>
-              <th className="p-3 text-right font-bold">Opći GP Bodovi</th>
+            <tr>
+              <th className="col-rank">#</th>
+              <th>Ime i prezime</th>
+              <th>Titula / Kat.</th>
+              <th>Kategorija</th>
+              <th className="col-num">Rapid Rejting</th>
+              <th className="col-num col-points">Opći GP Bodovi</th>
             </tr>
           </thead>
           <tbody>
             {dubrovnikStandings && dubrovnikStandings.length > 0 ? (
               dubrovnikStandings.map((player, index) => (
-                <tr key={index} className="border-b hover:bg-slate-50 transition">
-                  <td className="p-3 text-center font-medium text-gray-500">{index + 1}.</td>
-                  <td className="p-3 font-semibold text-gray-900">{player.full_name}</td>
-                  <td className="p-3 text-gray-600">{player.title_category || '-'}</td>
-                  <td className="p-3 text-sm text-gray-500">{player.category_gp_type || '-'}</td>
-                  <td className="p-3 text-right text-gray-600">{player.rating_rapid || 0}</td>
-                  <td className="p-3 text-right font-bold text-blue-700">{player.points_general_gp || 0}</td>
+                <tr key={index}>
+                  <td className="col-rank">{index + 1}.</td>
+                  <td className="poredak-name">{player.full_name}</td>
+                  <td>{player.title_category || '-'}</td>
+                  <td className="poredak-muted">{player.category_gp_type || '-'}</td>
+                  <td className="col-num">{player.rating_rapid || 0}</td>
+                  <td className="col-num col-points">{player.points_general_gp || 0}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="p-6 text-center text-gray-500">
+                <td colSpan="6" className="poredak-empty">
                   Trenutno nema unesenih članova ili bodova.
                 </td>
               </tr>
@@ -70,6 +70,31 @@ export default async function PoredakPage() {
           </tbody>
         </table>
       </div>
-    </div>
+    </PageShell>
+  )
+}
+
+function PageShell({ children }) {
+  return (
+    <>
+      <header className="top">
+        <div className="top-inner">
+          <a href="/" className="brand">
+            <img className="mark" src="/logo.png" alt="ŠK Dubrovnik" />
+            ŠK Dubrovnik Grand Prix
+          </a>
+          <nav className="primary">
+            <a href="/">Home</a>
+            <a href="/turniri">Turniri</a>
+            <a href="/poredak" className="active">Poredak</a>
+            <a href="/uclani-se">Učlani se</a>
+          </nav>
+        </div>
+      </header>
+
+      <div className="poredak-page">{children}</div>
+
+      <footer>© {new Date().getFullYear()} ŠK Dubrovnik Grand Prix</footer>
+    </>
   )
 }
