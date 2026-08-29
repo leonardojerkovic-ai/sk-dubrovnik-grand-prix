@@ -1,6 +1,5 @@
+export const dynamic = 'force-dynamic';
 import { createClient } from '@supabase/supabase-js';
-
-export const revalidate = 30;
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
