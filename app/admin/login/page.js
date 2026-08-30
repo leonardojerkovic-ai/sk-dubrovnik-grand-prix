@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../../lib/supabaseClient';
+import { createClient } from '../../../lib/supabase/client';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -10,6 +10,7 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const supabase = createClient();
 
   async function handleSubmit(e) {
     e.preventDefault();
