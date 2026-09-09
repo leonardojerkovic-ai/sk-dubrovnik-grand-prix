@@ -12,15 +12,22 @@ export default function DgpAdminPage() {
   const [results, setResults] = useState([]);
   const [qualifiers, setQualifiers] = useState([]);
   const [rankings, setRankings] = useState([]);
+  const [players, setPlayers] = useState([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState(null);
+  const [newResult, setNewResult] = useState({ player_id: '', final_rank: '', score: '', games_played: '', wins: 0, draws: 0, losses: 0, rating_used: '' });
 
   async function loadTournaments() {
     setLoading(true);
     const { data, error } = await supabase.from('tournaments').select('id,name,start_date,end_date,season_id,event_stage,tournament_scope,category_code,status,published,tournament_level,tempo').order('start_date', { ascending: false });
     if (error) setMessage(`Greška: ${error.message}`);
     setTournaments(data || []); setLoading(false);
+  }
+
+  async function loadPlayers() {
+    const { data, error } = await supabase.from('players').select('id,full_name,is_active').eq('is_active', true).order('full_name');
+    if (!error) setPlayers(data || []);
   }
 
   async function loadTournament(id) {
@@ -42,7 +49,7 @@ export default function DgpAdminPage() {
     else setMessage(`Greška pri učitavanju ljestvice: ${error.message}`);
   }
 
-  useEffect(() => { loadTournaments(); loadRankings(); }, []);
+  useEffect(() => { loadTournaments(); loadRankings(); loadPlayers(); }, []);
   useEffect(() => { loadTournament(selected); }, [selected, tournaments]);
 
   async function refreshSeasonFinal(seasonId) {
@@ -67,6 +74,31 @@ export default function DgpAdminPage() {
     const { error } = await supabase.rpc('refresh_dgp_final_qualifiers', { p_final_tournament_id: Number(selected) });
     setSavingId(null); setMessage(error ? `Greška: ${error.message}` : 'Kvalifikacije finala su osvježene.');
     await loadTournament(selected);
+  }
+
+  async function addResult() {
+    if (!selected || !newResult.player_id) { setMessage('Odaberi igrača prije dodavanja rezultata.'); return; }
+    setSavingId('new-result'); setMessage('');
+    const row = {
+      player_id: Number(newResult.player_id),
+      final_rank: newResult.final_rank === '' ? null : Number(newResult.final_rank),
+      score: newResult.score === '' ? 0 : Number(newResult.score),
+      games_played: newResult.games_played === '' ? 0 : Number(newResult.games_played),
+      wins: newResult.wins === '' ? 0 : Number(newResult.wins),
+      draws: newResult.draws === '' ? 0 : Number(newResult.draws),
+      losses: newResult.losses === '' ? 0 : Number(newResult.losses),
+      rating_standard: null,
+      rating_rapid: null,
+      rating_blitz: null,
+      rating_used: newResult.rating_used === '' ? null : Number(newResult.rating_used),
+    };
+    const { error } = await supabase.rpc('import_tournament_results', { p_tournament_id: Number(selected), p_rows: [row] });
+    setSavingId(null);
+    if (error) { setMessage(`Greška: ${error.message}`); return; }
+    setNewResult({ player_id: '', final_rank: '', score: '', games_played: '', wins: 0, draws: 0, losses: 0, rating_used: '' });
+    await refreshSeasonFinal(tournament?.season_id);
+    setMessage('Rezultat je dodan kroz zaštićeni admin workflow; bodovi i ljestvica su osvježeni.');
+    await loadTournament(selected); await loadRankings();
   }
 
   async function updateResult(row) {
@@ -116,6 +148,7 @@ export default function DgpAdminPage() {
         {message && <p role="status" style={{ marginBottom: 0 }}>{message}</p>}
       </section>
       {selected && <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 12, marginBottom: 18 }}>{[[stats.players,'Rezultati'],[stats.played,'Odigrali'],[stats.points,'Dodijeljeni bodovi'],[stats.confirmed,'Potvrđeni'],[stats.declined,'Odbijeni'],[stats.noShow,'NO_SHOW']].map(([v,l]) => <div className="admin-card" key={l}><div style={{ color: 'var(--ink-soft)', fontSize: '.88rem' }}>{l}</div><strong style={{ display: 'block', fontSize: '1.7rem', marginTop: 5 }}>{v}</strong></div>)}</section>}
+      {selected && <section className="admin-card" style={{ marginBottom: 18 }}><h2>Dodaj rezultat</h2><p style={{ color: 'var(--ink-soft)' }}>Prvi rezultat može se dodati i kada turnir još nema nijedan red. Unos ide kroz zaštićeni admin RPC.</p><div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px,1.5fr) repeat(7,minmax(70px,1fr)) auto', gap: 8, alignItems: 'end', overflowX: 'auto' }}><div className="field" style={{ margin: 0 }}><label htmlFor="new-player">Igrač</label><select id="new-player" value={newResult.player_id} onChange={(e) => setNewResult({ ...newResult, player_id: e.target.value })}><option value="">Odaberi…</option>{players.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}</select></div>{[['final_rank','Pl.'],['score','Score'],['games_played','Partije'],['wins','W'],['draws','D'],['losses','L'],['rating_used','Rejting']].map(([field,label]) => <div className="field" style={{ margin: 0 }} key={field}><label htmlFor={`new-${field}`}>{label}</label><input id={`new-${field}`} type="number" step={field === 'score' ? '0.5' : '1'} value={newResult[field]} onChange={(e) => setNewResult({ ...newResult, [field]: e.target.value })} /></div>)}<button className="btn-primary" disabled={savingId === 'new-result'} onClick={addResult}>{savingId === 'new-result' ? 'Dodajem…' : 'Dodaj'}</button></div></section>}
       {currentQualifiers.length > 0 && <section className="admin-card" style={{ marginBottom: 18 }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}><div><h2>Finale — TOP 8</h2><p style={{ color: 'var(--ink-soft)' }}>Prikazuje se samo najnovije stanje svakog finalnog slota; povijesni replacement zapisi ostaju u bazi.</p></div><span className="admin-badge">{currentQualifiers.length}/8</span></div><div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}><thead><tr><th>Slot</th><th>Igrač</th><th>Kval. rang</th><th>Bodovi</th><th>Status</th><th>Akcija</th></tr></thead><tbody>{currentQualifiers.map((q) => <tr key={q.id}><td>#{q.final_slot || '—'}</td><td><strong>{q.players?.full_name || `Igrač ${q.player_id}`}</strong>{q.replaced_player_id && <div style={{ color: 'var(--ink-soft)', fontSize: '.8rem' }}>replacement za igrača #{q.replaced_player_id}</div>}</td><td>{q.qualification_rank ?? '—'}</td><td>{q.qualification_points ?? 0}</td><td><span className="admin-badge">{q.status}</span></td><td><select value={q.status} disabled={savingId === `q-${q.id}`} onChange={(e) => setFinalStatus(q.id, e.target.value)}>{allowedStatuses(q.status).map((s) => <option key={s}>{s}</option>)}</select></td></tr>)}</tbody></table></div></section>}
       {results.length > 0 && <section className="admin-card" style={{ marginBottom: 18 }}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}><div><h2>Rezultati turnira</h2><p style={{ color: 'var(--ink-soft)' }}>Promjene se spremaju kroz zaštićeni admin RPC; nakon spremanja automatski se osvježavaju bodovi, ljestvica i TOP 8.</p></div><button className="btn-secondary" onClick={() => loadTournament(selected)}>Osvježi</button></div><div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}><thead><tr><th>Igrač</th><th>Pl.</th><th>Score</th><th>Partije</th><th>W</th><th>D</th><th>L</th><th>Rejting</th><th>GP bodovi</th><th></th></tr></thead><tbody>{results.map((r) => <tr key={r.id}><td>{r.players?.full_name || r.player_id}</td>{['final_rank','score','games_played','wins','draws','losses'].map((field) => <td key={field}><input type="number" step={field === 'score' ? '0.5' : '1'} value={r[field] ?? ''} onChange={(e) => patchResult(r.id, field, e.target.value)} style={{ width: field === 'score' ? 72 : 58 }} /></td>)}<td>{r.rating_used ?? '—'}</td><td>{r.points_awarded ?? 0}</td><td><button className="btn-primary" disabled={savingId === r.id} onClick={() => updateResult(r)}>{savingId === r.id ? '…' : 'Spremi'}</button></td></tr>)}</tbody></table></div></section>}
       <section className="admin-card"><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}><div><h2>Opći DGP — TOP 20</h2><p style={{ color: 'var(--ink-soft)' }}>Brzi operativni pregled ljestvice.</p></div><a className="btn-secondary" href="/dgp">Javna ljestvica</a></div>{rankedRows.length === 0 ? <p style={{ color: 'var(--ink-soft)' }}>Ljestvica trenutno nema podataka.</p> : <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}><thead><tr><th>Rang</th><th>Igrač</th><th>Bodovi</th><th>Finale</th><th>Rezultati</th></tr></thead><tbody>{rankedRows.map((r) => <tr key={r.player_id}><td>{r.display_rank}</td><td>{r.full_name || `Igrač ${r.player_id}`}</td><td>{r.general_gp_points ?? 0}</td><td>{r.final_points ?? 0}</td><td>{r.counted_results ?? 0}</td></tr>)}</tbody></table></div>}</section>
