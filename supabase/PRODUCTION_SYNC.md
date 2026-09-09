@@ -6,13 +6,15 @@ Supabase project ref: `qyfpnyswyluveflvknij`
 
 ## Important finding
 
-The production database currently has **45 recorded migrations** in `supabase_migrations.schema_migrations`, while this branch currently contains only three migration files under `supabase/migrations/`.
+The production database currently has **46 recorded migrations** in `supabase_migrations.schema_migrations`, while this branch currently contains only three migration files under `supabase/migrations/`.
 
 Therefore the GitHub migration directory is **not yet a reproducible representation of production**. Do not run `supabase db push` against production from this branch until the migration history is reconciled.
 
+A production catalog snapshot is maintained in [`supabase/PRODUCTION_CATALOG_2026-09-09.md`](./PRODUCTION_CATALOG_2026-09-09.md). It records the verified production schema inventory, DGP workflow, security state, and reproducibility boundary. It is a catalog snapshot, **not** an exact `pg_dump`.
+
 ## Production migration history
 
-The following versions are recorded as applied in production:
+The following **46 versions** are recorded as applied in production:
 
 - 20260829175800_create_profiles_table
 - 20260901201307_add_dgp_final_qualification
@@ -73,10 +75,18 @@ The latter two are **not recorded as applied in production**. They are developme
 
 ## Required reconciliation
 
-The safe way to make GitHub the reproducible source of truth is to pull a schema-only dump from the linked production project and commit it as the baseline, then preserve/repair migration history around that baseline. Supabase documents `supabase db pull` / `supabase db dump` for exactly this workflow.
+The safe way to make GitHub the reproducible source of truth is to pull a schema-only dump from the linked production project and commit it as the baseline, then preserve/repair migration history around that baseline. Supabase documents `supabase db pull` / `supabase db dump` for this workflow.
 
-Do not manually fabricate a replacement for the 42 missing historical migration files: the final schema is the source that matters for a reproducible fresh deployment, while production migration history must remain separately documented.
+Do not manually fabricate replacements for the 43 missing historical migration files. The verified final schema is what is needed for a reproducible fresh deployment, while the production migration history remains separately documented.
+
+## Current reproducibility boundary
+
+The exact schema-only production dump has **not** yet been committed. The available Supabase connector can inspect the production catalog and execute SQL, but it does not provide the database connection secret required to run a local `pg_dump`/`supabase db dump --linked` and capture the complete canonical SQL baseline.
+
+Until that exact dump is available, `PRODUCTION_CATALOG_2026-09-09.md` plus this synchronization record are the authoritative documentation of the verified production state, but they are not a substitute for an exact schema dump.
 
 ## Security / application state already verified
 
 Production currently contains the Phase 2 tables, DGP scoring functions, ranking views, Final qualification workflow, RLS/policies, and the registration workflow fixes. The final E2E workflow was also verified with rollback-only test data.
+
+Auth/SMTP configuration is intentionally outside this synchronization task.
