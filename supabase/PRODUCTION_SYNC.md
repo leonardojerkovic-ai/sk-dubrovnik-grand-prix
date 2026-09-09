@@ -4,13 +4,14 @@
 
 Supabase project ref: `qyfpnyswyluveflvknij`
 
-## Important finding
+## Current state
 
-The production database currently has **46 recorded migrations** in `supabase_migrations.schema_migrations`, while this branch currently contains only three migration files under `supabase/migrations/`.
+Production has **46 recorded migrations** in `supabase_migrations.schema_migrations`.
+The branch now also contains a corrected Phase-2 baseline contract:
 
-Therefore the GitHub migration directory is **not yet a reproducible representation of production**. Do not run `supabase db push` against production from this branch until the migration history is reconciled.
+- `supabase/20260910000000_phase2_reproducible_baseline.sql`
 
-A production catalog snapshot is maintained in [`supabase/PRODUCTION_CATALOG_2026-09-09.md`](./PRODUCTION_CATALOG_2026-09-09.md). It records the verified production schema inventory, DGP workflow, security state, and reproducibility boundary. It is a catalog snapshot, **not** an exact `pg_dump`.
+That baseline is additive/idempotent and covers the Phase-2 tables, tournament fields, result storage, scoring metadata, core DGP scoring/ranking objects, RLS enablement, grants, and the nine previously missing FK indexes. It is intended to make the Phase-2 application schema reproducible from the original `schema.sql` without pretending to recreate the 46 historical production migrations.
 
 ## Production migration history
 
@@ -63,30 +64,18 @@ The following **46 versions** are recorded as applied in production:
 - 20260909222648_allow_player_registration_without_email
 - 20260909222717_fix_admin_registration_role_check
 
-## GitHub migration files currently present
+## GitHub migration state
 
-Only these three are currently committed on `phase-2-engine-ui`:
+The historical migration directory is still intentionally not fabricated: the 43 missing historical migration files are not available through the current connector and are therefore not invented.
 
-- `20260909214902_make_public_profiles_security_invoker_public_columns.sql`
-- `20260909221000_phase2_dgp_bootstrap.sql`
-- `20260909223000_fix_phase2_e2e_registration_workflow.sql`
+The new baseline is a **reproducible Phase-2 schema contract**, not a replacement for the missing historical migrations.
 
-The latter two are **not recorded as applied in production**. They are development bootstrap/fix files and must not be treated as the production migration history.
+## Security / performance
 
-## Required reconciliation
+The Phase-2 security hardening remains in production. Auth/SMTP is intentionally untouched.
 
-The safe way to make GitHub the reproducible source of truth is to pull a schema-only dump from the linked production project and commit it as the baseline, then preserve/repair migration history around that baseline. Supabase documents `supabase db pull` / `supabase db dump` for this workflow.
+The performance baseline now includes indexes for the nine previously unindexed foreign keys. Existing unused-index and multiple-permissive-policy notices are retained rather than deleting potentially useful indexes or changing policy semantics without evidence.
 
-Do not manually fabricate replacements for the 43 missing historical migration files. The verified final schema is what is needed for a reproducible fresh deployment, while the production migration history remains separately documented.
+## Exact production dump boundary
 
-## Current reproducibility boundary
-
-The exact schema-only production dump has **not** yet been committed. The available Supabase connector can inspect the production catalog and execute SQL, but it does not provide the database connection secret required to run a local `pg_dump`/`supabase db dump --linked` and capture the complete canonical SQL baseline.
-
-Until that exact dump is available, `PRODUCTION_CATALOG_2026-09-09.md` plus this synchronization record are the authoritative documentation of the verified production state, but they are not a substitute for an exact schema dump.
-
-## Security / application state already verified
-
-Production currently contains the Phase 2 tables, DGP scoring functions, ranking views, Final qualification workflow, RLS/policies, and the registration workflow fixes. The final E2E workflow was also verified with rollback-only test data.
-
-Auth/SMTP configuration is intentionally outside this synchronization task.
+An exact schema-only production `pg_dump` is still not available through the current connector, so this repository must not claim byte-for-byte reproduction of production. The baseline above closes the concrete Phase-2 bootstrap/schema gap while preserving that distinction.
