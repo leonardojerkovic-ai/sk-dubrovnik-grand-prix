@@ -1,0 +1,7 @@
+import PublicHeader from '../components/PublicHeader';
+
+export const metadata = { title: 'FAQ | ŠK Dubrovnik Grand Prix', description: 'Često postavljana pitanja o turnirima, prijavama i Grand Prix ljestvicama.' };
+
+const items = [['Kako se prijaviti na turnir?', 'Otvorite stranicu Turniri, odaberite turnir s otvorenim prijavama i ispunite obrazac. Nakon prijave sustav obrađuje status prijave.'], ['Kako se računaju GP bodovi?', 'GP bodovi računaju se prema pravilima odgovarajuće sezone, formatu turnira i plasmanu. Kategorijske ljestvice koriste Opći GP bodove i bodove posebnih turnira iste kategorije.'], ['Gdje mogu vidjeti rezultate?', 'Završeni i objavljeni turniri dostupni su na stranici Rezultati, gdje se prikazuju plasman, rezultat i dodijeljeni GP bodovi.'], ['Tko može igrati kategorijske turnire?', 'Podobnost ovisi o pravilima konkretne kategorije i provjerava se prema podacima igrača i pravilima sezone.'], ['Kako mogu kontaktirati klub?', 'Sve osnovne kontakt informacije nalaze se na stranici Kontakt.']];
+
+export default function FAQPage() { return <><PublicHeader active="/faq" /><section className="page-hero"><div><span className="eyebrow">Pitanja i odgovori</span><h1>FAQ</h1><p>Najvažnije informacije o turnirima, prijavama i Grand Prix sustavu.</p></div></section><main className="public-main"><div className="faq-list">{items.map(([q,a]) => <details className="faq-item" key={q}><summary>{q}</summary><p>{a}</p></details>)}</div></main><footer>© {new Date().getFullYear()} ŠK Dubrovnik Grand Prix</footer></>; }

@@ -1,130 +1,13 @@
+import PublicHeader from './components/PublicHeader';
 import { supabase } from '../lib/supabaseClient';
 
-// Server Component - podaci se dohvaćaju na serveru prije slanja HTML-a klijentu,
-// isto kao što bi PHP izvršio upit prije nego ispiše stranicu.
-export const revalidate = 30; // stranica se osvježava iz baze najviše svakih 30s
-
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  return new Date(dateStr).toLocaleDateString('hr-HR');
-}
+export const revalidate = 30;
+export const metadata = { title: 'ŠK Dubrovnik Grand Prix', description: 'Službeni javni portal Šahovskog kluba Dubrovnik — turniri, prijave, ljestvice, rezultati i vijesti.' };
 
 export default async function HomePage() {
-  const { data: news } = await supabase
-    .from('news')
-    .select('*')
-    .order('published_at', { ascending: false })
-    .limit(10);
-
-  const { data: tournaments } = await supabase
-    .from('tournaments')
-    .select('*')
-    .order('starts_at', { ascending: true });
-
-  return (
-    <>
-      <header className="top">
-        <div className="top-inner">
-          <a href="/" className="brand">
-            {/* Zamijeni /logo.png stvarnim logom kluba (stavi ga u /public) */}
-            <img className="mark" src="/logo.png" alt="ŠK Dubrovnik" />
-            ŠK Dubrovnik Grand Prix
-          </a>
-          <nav className="primary">
-            <a href="/" className="active">Home</a>
-            <a href="/turniri">Turniri</a>
-            <a href="/poredak">Poredak</a>
-            <a href="/uclani-se">Učlani se</a>
-          </nav>
-        </div>
-      </header>
-
-      <BoardRow />
-
-      <section className="hero">
-        <div className="hero-inner">
-          <div className="eyebrow">Šahovski klub Dubrovnik</div>
-          <h1>ŠK Dubrovnik Grand Prix</h1>
-          <p>
-            Najave turnira, kalendar natjecanja i poredak igrača ŠK Dubrovnik —
-            sve prijave i rezultati na jednom mjestu.
-          </p>
-          <a href="/turniri" className="cta">Prijavi se na turnir</a>
-        </div>
-      </section>
-
-      <BoardRow />
-
-      <div className="layout">
-        <aside className="sidebar">
-          <details open>
-            <summary>Turniri</summary>
-            <ul>
-              <li><a href="/turniri">Najave</a></li>
-              <li><a href="/kalendar">Kalendar</a></li>
-              <li><a href="/rezultati">Rezultati</a></li>
-            </ul>
-          </details>
-          <details>
-            <summary>Klub</summary>
-            <ul>
-              <li><a href="/o-nama">O nama</a></li>
-              <li><a href="/dokumenti">Dokumenti</a></li>
-              <li><a href="/kontakt">Kontakt</a></li>
-            </ul>
-          </details>
-
-          {/* Nadolazeći turniri iz baze, umjesto ručno upisanog teksta */}
-          {tournaments && tournaments.length > 0 && (
-            <details open>
-              <summary>Nadolazeći</summary>
-              <ul>
-                {tournaments.map((t) => (
-                  <li key={t.id}>
-                    <a href={`/turniri/${t.id}`}>
-                      {t.name}{t.starts_at ? ` — ${formatDate(t.starts_at)}` : ''}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </details>
-          )}
-        </aside>
-
-        <main>
-          <h2>Najave</h2>
-
-          {(!news || news.length === 0) && (
-            <p style={{ color: 'var(--ink-soft)' }}>
-              Trenutno nema objavljenih vijesti.
-            </p>
-          )}
-
-          {news && news.map((item) => (
-            <article className="news-card" key={item.id}>
-              {item.tag && <span className="tag">{item.tag}</span>}
-              <h3>{item.title}</h3>
-              {item.excerpt && <p>{item.excerpt}</p>}
-              <div className="meta">
-                {item.format && <span>Format: {item.format}</span>}
-                {item.status && <span>Status: {item.status}</span>}
-              </div>
-            </article>
-          ))}
-        </main>
-      </div>
-
-      <footer>© {new Date().getFullYear()} ŠK Dubrovnik Grand Prix</footer>
-    </>
-  );
-}
-
-function BoardRow() {
-  return (
-    <div className="board-row">
-      {Array.from({ length: 16 }).map((_, i) => (
-        <span key={i}></span>
-      ))}
-    </div>
-  );
+  const [{ data: tournaments }, { data: news }] = await Promise.all([
+    supabase.from('tournaments').select('*').eq('published', true).order('starts_at', { ascending: true }).limit(6),
+    supabase.from('news').select('*').order('published_at', { ascending: false }).limit(3),
+  ]);
+  return <><PublicHeader active="/" /><section className="home-hero"><div className="home-hero-inner"><div><span className="eyebrow">Šahovski klub Dubrovnik</span><h1>Šah koji traje.<br /><em>Grand Prix</em> koji povezuje.</h1><p>Turniri, prijave, rezultati i ljestvice na jednom mjestu. Pratite sezonu ŠK Dubrovnik i uključite se u natjecanje.</p><div className="hero-actions"><a className="btn-primary" href="/turniri">Pogledaj turnire</a><a className="btn-ghost" href="/poredak">Otvori ljestvice</a></div></div><div className="hero-stat"><span>Dubrovnik Grand Prix</span><strong>2026 / 27</strong><small>Nova sezona. Novi potez.</small></div></div></section><div className="board-row">{Array.from({ length: 16 }).map((_, i) => <span key={i}></span>)}</div><main className="public-main"><section className="feature-grid"><article className="feature-card feature-dark"><span className="section-kicker">Natjecanje</span><h2>Prijavi se i igraj.</h2><p>Odaberi turnir, provjeri uvjete i pošalji prijavu online.</p><a href="/prijave">Prijave →</a></article><article className="feature-card"><span className="section-kicker">Grand Prix</span><h2>Prati svoj plasman.</h2><p>Opći GP i kategorijske ljestvice prate napredak kroz sezonu.</p><a href="/poredak">Ljestvice →</a></article><article className="feature-card"><span className="section-kicker">Rezultati</span><h2>Svaki rezultat je važan.</h2><p>Pregled završenih i objavljenih turnira na jednom mjestu.</p><a href="/rezultati">Rezultati →</a></article></section><section className="home-section"><div className="section-heading"><div><span className="section-kicker">Kalendar</span><h2>Najave turnira</h2></div><a href="/turniri">Svi turniri →</a></div><div className="home-list">{!tournaments?.length ? <div className="public-card"><p>Trenutačno nema objavljenih turnira.</p></div> : tournaments.map(t => <a className="event-row" href={`/turniri/${t.id}`} key={t.id}><span>{t.starts_at ? new Date(t.starts_at).toLocaleDateString('hr-HR') : '—'}</span><strong>{t.name}</strong><b>→</b></a>)}</div></section><section className="home-section"><div className="section-heading"><div><span className="section-kicker">Aktualno</span><h2>Vijesti</h2></div><a href="/vijesti">Sve vijesti →</a></div><div className="news-grid">{!news?.length ? <div className="public-card"><p>Još nema objavljenih vijesti.</p></div> : news.map(item => <article className="public-card news-public" key={item.id}>{item.tag && <span className="section-kicker">{item.tag}</span>}<h3>{item.title}</h3>{item.excerpt && <p>{item.excerpt}</p>}</article>)}</div></section></main><footer>© {new Date().getFullYear()} ŠK Dubrovnik Grand Prix · Šahovski klub Dubrovnik</footer></>;
 }
