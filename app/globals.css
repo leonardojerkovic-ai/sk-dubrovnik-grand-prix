@@ -1,208 +1,25 @@
 :root{
-  --navy:        #1c3a5e;
-  --navy-dark:   #12283e;
-  --sky:         #bfe0f0;
-  --sky-pale:    #eaf5fa;
-  --red:         #b5262c;
-  --red-dark:    #8e1e23;
-  --ivory:       #f7faf9;
-  --ink:         #1c2226;
-  --ink-soft:    #4c5760;
+  --navy:#1c3a5e; --navy-dark:#12283e; --sky:#bfe0f0; --sky-pale:#eaf5fa;
+  --red:#b5262c; --red-dark:#8e1e23; --ivory:#f7faf9; --ink:#1c2226; --ink-soft:#4c5760;
 }
-
-*{ box-sizing:border-box; margin:0; padding:0; }
-
-body{
-  background:var(--ivory);
-  color:var(--ink);
-  font-family:'Work Sans', sans-serif;
-  line-height:1.55;
-}
-
-h1,h2,h3, .brand{
-  font-family:'Fraunces', serif;
-  letter-spacing:-0.01em;
-}
-
-.mono{ font-family:'IBM Plex Mono', monospace; letter-spacing:0.02em; }
-
-a{ color:inherit; text-decoration:none; }
-
-/* ---------- signature motif: chessboard rank ---------- */
-.board-row{
-  display:flex;
-  height:14px;
-  width:100%;
-}
-.board-row span{ flex:1; }
-.board-row span:nth-child(4n+1),
-.board-row span:nth-child(4n+2){ background:var(--navy); }
-.board-row span:nth-child(4n+3),
-.board-row span:nth-child(4n+4){ background:var(--red); }
-
-/* ---------- top bar ---------- */
-header.top{
-  background:var(--navy-dark);
-  color:var(--sky-pale);
-}
-.top-inner{
-  max-width:1180px; margin:0 auto;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:18px 28px;
-}
-.brand{
-  display:flex; align-items:center; gap:14px;
-  font-size:1.35rem; font-weight:600; color:#fff;
-}
-.brand .mark{
-  width:52px; height:52px;
-  border-radius:50%;
-  object-fit:cover;
-  box-shadow:0 0 0 2px var(--sky);
-}
-nav.primary{
-  display:flex; gap:30px;
-  font-size:0.92rem; font-weight:500;
-  text-transform:uppercase; letter-spacing:0.05em;
-}
-nav.primary a{ opacity:0.85; padding:6px 2px; border-bottom:2px solid transparent; transition:.15s; }
-nav.primary a:hover, nav.primary a.active{ opacity:1; border-color:var(--red); }
-
-/* ---------- hero ---------- */
-.hero{
-  background:
-    radial-gradient(ellipse at top right, rgba(181,38,44,0.25), transparent 55%),
-    var(--navy);
-  color:#fff;
-  padding:64px 28px 46px;
-}
-.hero-inner{ max-width:1180px; margin:0 auto; }
-.eyebrow{
-  font-family:'IBM Plex Mono', monospace;
-  text-transform:uppercase; font-size:0.78rem; letter-spacing:0.12em;
-  color:var(--sky); margin-bottom:14px;
-}
-.hero h1{
-  font-size:clamp(2.1rem, 4vw, 3.2rem);
-  font-weight:600; max-width:16ch; margin-bottom:16px;
-}
-.hero p{ max-width:52ch; color:#d7e6ef; font-size:1.05rem; }
-.hero .cta{
-  display:inline-block; margin-top:26px;
-  background:var(--red); color:#fff;
-  font-weight:600; padding:12px 22px;
-  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 100%, 14px 100%);
-  border:none; cursor:pointer; font-size:1rem;
-}
-
-/* ---------- layout ---------- */
-.layout{
-  max-width:1180px; margin:0 auto;
-  display:grid; grid-template-columns:260px 1fr;
-  gap:40px; padding:44px 28px 70px;
-}
-@media (max-width:820px){ .layout{ grid-template-columns:1fr; } }
-
-/* ---------- sidebar ---------- */
-aside.sidebar details{
-  border-bottom:1px solid #d3e2ec;
-}
-aside.sidebar summary{
-  cursor:pointer; list-style:none;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:13px 4px;
-  font-weight:600; font-size:0.98rem; color:var(--navy);
-}
-aside.sidebar summary::-webkit-details-marker{ display:none; }
-aside.sidebar summary::after{
-  content:"▾"; color:var(--red); transition:transform .15s;
-}
-aside.sidebar details[open] summary::after{ transform:rotate(180deg); }
-aside.sidebar ul{ list-style:none; padding:0 4px 14px 6px; }
-aside.sidebar li a{
-  display:block; padding:6px 0 6px 16px;
-  font-size:0.92rem; color:var(--ink-soft);
-  border-left:2px solid #d3e2ec;
-}
-aside.sidebar li a:hover{ color:var(--navy); border-color:var(--red); }
-
-/* ---------- main / news ---------- */
-main h2{
-  font-size:1.5rem; font-weight:600; color:var(--navy);
-  margin-bottom:22px;
-}
-.news-card{
-  position:relative;
-  background:#fff;
-  border:1px solid #d3e2ec;
-  padding:24px 24px 22px;
-  margin-bottom:20px;
-  overflow:hidden;
-}
-.news-card::before{
-  content:"";
-  position:absolute; top:0; right:0;
-  width:0; height:0;
-  border-style:solid;
-  border-width:0 46px 46px 0;
-  border-color:transparent var(--red) transparent transparent;
-  opacity:0.95;
-}
-.news-card .tag{
-  font-family:'IBM Plex Mono', monospace; font-size:0.72rem;
-  text-transform:uppercase; letter-spacing:0.08em;
-  color:var(--red); margin-bottom:8px; display:block;
-}
-.news-card h3{
-  font-size:1.18rem; font-weight:600; margin-bottom:10px; color:var(--ink);
-  max-width:38ch;
-}
-.news-card p{ color:var(--ink-soft); font-size:0.95rem; max-width:56ch; }
-.news-card .meta{
-  margin-top:14px; display:flex; gap:18px;
-  font-family:'IBM Plex Mono', monospace; font-size:0.8rem; color:var(--navy);
-}
-.news-card .meta span.mono{ font-family:'IBM Plex Mono', monospace; }
-
-/* ---------- footer ---------- */
-footer{
-  background:var(--navy-dark); color:#a9bfd0;
-  text-align:center; padding:22px; font-size:0.85rem;
-}
-
-/* ---------- admin forms (nova, ali u istom duhu dizajna) ---------- */
-.admin-shell{
-  max-width:640px; margin:0 auto; padding:60px 28px;
-}
-.admin-card{
-  background:#fff; border:1px solid #d3e2ec; padding:32px;
-}
-.admin-card h1{ font-size:1.6rem; color:var(--navy); margin-bottom:22px; }
-.field{ margin-bottom:16px; }
-.field label{
-  display:block; font-size:0.85rem; font-weight:600; color:var(--navy);
-  margin-bottom:6px; text-transform:uppercase; letter-spacing:0.04em;
-}
-.field input, .field textarea, .field select{
-  width:100%; padding:10px 12px; border:1px solid #d3e2ec;
-  font-family:inherit; font-size:0.95rem; background:var(--ivory);
-}
-.field textarea{ min-height:90px; resize:vertical; }
-.btn-primary{
-  background:var(--navy); color:#fff; font-weight:600;
-  padding:11px 22px; border:none; cursor:pointer; font-size:0.95rem;
-}
-.btn-primary:hover{ background:var(--navy-dark); }
-.btn-danger{
-  background:transparent; color:var(--red); border:1px solid var(--red);
-  padding:6px 12px; font-size:0.82rem; cursor:pointer;
-}
-.error-msg{ color:var(--red); font-size:0.88rem; margin-top:10px; }
-.admin-list-item{
-  border-bottom:1px solid #d3e2ec; padding:14px 0;
-  display:flex; justify-content:space-between; align-items:flex-start; gap:16px;
-}
-.admin-topbar{
-  display:flex; justify-content:space-between; align-items:center;
-  margin-bottom:28px;
-}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ivory);color:var(--ink);font-family:'Work Sans',sans-serif;line-height:1.55}
+h1,h2,h3,.brand{font-family:'Fraunces',serif;letter-spacing:-.01em}
+.mono{font-family:'IBM Plex Mono',monospace;letter-spacing:.02em}
+a{color:inherit;text-decoration:none}
+.board-row{display:flex;height:8px;width:100%}.board-row span{flex:1}.board-row span:nth-child(4n+1),.board-row span:nth-child(4n+2){background:var(--navy)}.board-row span:nth-child(4n+3),.board-row span:nth-child(4n+4){background:var(--red)}
+header.top{background:var(--navy-dark);color:var(--sky-pale)}
+.top-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:18px 28px}.brand{font-size:1.3rem;font-weight:600;color:#fff}.primary{display:flex;gap:28px;font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em}.primary a{opacity:.8;padding:6px 2px;border-bottom:2px solid transparent;transition:.15s}.primary a:hover,.primary a.active{opacity:1;border-color:var(--red)}
+.dgp-hero{background:radial-gradient(circle at 85% 20%,rgba(191,224,240,.18),transparent 30%),radial-gradient(circle at 70% 100%,rgba(181,38,44,.24),transparent 36%),var(--navy);color:#fff}.dgp-hero-inner{max-width:1180px;margin:0 auto;padding:58px 28px 54px;display:grid;grid-template-columns:1fr 300px;gap:40px;align-items:end}.eyebrow,.section-kicker,.ranking-code{font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.12em;font-size:.72rem}.eyebrow{color:var(--sky);margin-bottom:13px}.dgp-hero h1{font-size:clamp(2.5rem,5vw,4.4rem);line-height:1;margin-bottom:18px}.dgp-hero p{max-width:650px;color:#d7e6ef;font-size:1.03rem}.season-card{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);padding:22px 24px;backdrop-filter:blur(8px)}.season-card span{display:block;color:var(--sky);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;font-size:.68rem;letter-spacing:.1em;margin-bottom:8px}.season-card strong{display:block;font-family:'Fraunces',serif;font-size:1.35rem}.season-card b{display:block;margin-top:8px;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:.9rem}
+.dgp-main{max-width:1180px;margin:0 auto;padding:48px 28px 72px}.dgp-intro{display:flex;justify-content:space-between;gap:30px;align-items:end;margin-bottom:30px}.section-kicker{color:var(--red)}.dgp-intro h2{font-size:2rem;color:var(--navy);margin:5px 0 4px}.dgp-intro p{color:var(--ink-soft);max-width:620px}.player-count{text-align:right;border-left:1px solid #d3e2ec;padding-left:28px;min-width:180px}.player-count strong{display:block;color:var(--navy);font:600 2rem 'Fraunces',serif}.player-count span{display:block;color:var(--ink-soft);font-size:.78rem}
+.ranking-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.ranking-card{background:#fff;border:1px solid #d3e2ec;box-shadow:0 8px 24px rgba(18,40,62,.045);overflow:hidden}.ranking-card-featured{grid-column:1/-1}.ranking-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding:22px 24px 17px;border-bottom:1px solid #e3edf2}.ranking-code{display:inline-block;color:var(--red);margin-bottom:4px}.ranking-card h3{color:var(--navy);font-size:1.35rem}.ranking-count{font-family:'IBM Plex Mono',monospace;color:#72808a;font-size:.68rem;white-space:nowrap;margin-top:5px}.ranking-table-wrap{overflow-x:auto}.ranking-table{width:100%;border-collapse:collapse}.ranking-table th{padding:10px 24px;text-align:left;color:#72808a;background:#fbfcfd;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;font-size:.63rem;font-weight:500}.ranking-table td{padding:12px 24px;border-top:1px solid #edf2f5;font-size:.91rem}.ranking-table tbody tr:hover{background:#f8fbfc}.rank-col{width:62px}.number-col{text-align:right}.rank-badge{display:inline-flex;width:26px;height:26px;align-items:center;justify-content:center;border-radius:50%;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:#68757e}.rank-1{background:#f1e5b7;color:#6d5716}.rank-2{background:#e8ecef;color:#52606a}.rank-3{background:#ead9cc;color:#7a4d35}.player-name{font-weight:600}.points{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--navy)}.muted-number{font-family:'IBM Plex Mono',monospace;color:#7a8790;font-size:.8rem}.ranking-empty{padding:24px;color:var(--ink-soft);font-size:.9rem}
+.tournaments-hero{background:radial-gradient(circle at 85% 10%,rgba(191,224,240,.18),transparent 30%),var(--navy);color:#fff}.tournaments-hero-inner,.tournaments-main,.tournament-detail-inner,.tournament-detail-main{max-width:1180px;margin:0 auto}.tournaments-hero-inner{padding:56px 28px 52px}.tournaments-hero h1{font-size:clamp(2.4rem,5vw,4rem);line-height:1;margin:5px 0 15px}.tournaments-hero p{max-width:700px;color:#d7e6ef;font-size:1rem}.tournaments-main{padding:46px 28px 72px}.tournaments-heading{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:26px}.tournaments-heading h2{font-size:2rem;color:var(--navy);margin-top:5px}.tournament-total{font:500 .72rem 'IBM Plex Mono',monospace;color:#72808a;text-transform:uppercase;letter-spacing:.08em}.tournament-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.tournament-card{background:#fff;border:1px solid #d3e2ec;padding:25px;box-shadow:0 8px 24px rgba(18,40,62,.045);display:flex;flex-direction:column}.tournament-card-top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:17px}.status-pill{display:inline-flex;align-items:center;padding:5px 9px;border:1px solid #d3e2ec;color:#68757e;font:500 .65rem 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em}.status-open{border-color:#b9d8c5;color:#287044;background:#f4fbf6}.tournament-date{font:500 .7rem 'IBM Plex Mono',monospace;color:var(--red);white-space:nowrap}.tournament-card h3{font-size:1.45rem;color:var(--navy);line-height:1.15;margin-bottom:10px}.tournament-card p{color:var(--ink-soft);font-size:.92rem;margin-bottom:20px}.tournament-meta,.detail-meta{display:grid;gap:10px;margin-top:auto}.tournament-meta>div,.detail-meta>div{display:flex;justify-content:space-between;gap:20px;padding-top:10px;border-top:1px solid #edf2f5}.tournament-meta dt,.detail-meta dt{color:#7a8790;font:500 .65rem 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em}.tournament-meta dd,.detail-meta dd{font-size:.82rem;font-weight:600;text-align:right}.tournament-actions{display:flex;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid #edf2f5}.btn-primary,.btn-secondary{display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;font-size:.84rem;font-weight:600}.btn-primary{background:var(--navy);color:#fff;border:none;cursor:pointer}.btn-primary:hover{background:var(--navy-dark)}.btn-secondary{border:1px solid #cbdbe5;color:var(--navy);background:#fff}.btn-secondary:hover{border-color:var(--navy)}.tournament-empty{background:#fff;border:1px solid #d3e2ec;padding:28px;color:var(--ink-soft)}
+.tournament-detail-hero{background:radial-gradient(circle at 90% 20%,rgba(181,38,44,.22),transparent 30%),var(--navy);color:#fff}.tournament-detail-inner{padding:34px 28px 58px}.back-link{display:inline-block;color:#bfe0f0;font-size:.82rem;margin-bottom:35px}.tournament-detail-inner h1{font-size:clamp(2.3rem,5vw,4.1rem);line-height:1.02;max-width:850px;margin:5px 0 13px}.tournament-detail-inner p{color:#d7e6ef}.tournament-detail-main{padding:44px 28px 72px}.detail-content{max-width:850px}.detail-card,.registration-card{background:#fff;border:1px solid #d3e2ec;padding:28px;box-shadow:0 8px 24px rgba(18,40,62,.045)}.detail-card h2,.registration-card h2{color:var(--navy);font-size:1.75rem;margin:5px 0 13px}.detail-card>p,.registration-card>p{color:var(--ink-soft);font-size:.95rem}.detail-meta{margin-top:24px}.registration-card{margin-top:20px}.registration-card .btn-primary{margin-top:18px}
+.registration-hero{background:radial-gradient(circle at 86% 18%,rgba(191,224,240,.16),transparent 32%),radial-gradient(circle at 72% 100%,rgba(181,38,44,.2),transparent 34%),var(--navy);color:#fff}.registration-hero-inner{max-width:1180px;margin:0 auto;padding:34px 28px 58px}.registration-hero h1{font-size:clamp(2.4rem,5vw,4rem);line-height:1;margin:5px 0 15px}.registration-hero p{max-width:680px;color:#d7e6ef}.registration-main{max-width:1180px;margin:0 auto;padding:44px 28px 72px}.registration-layout{display:grid;grid-template-columns:minmax(0,760px) 300px;gap:20px;align-items:start}.registration-layout .registration-card{margin:0}.registration-context{margin-bottom:25px}.registration-card form{margin-top:24px}.registration-submit{width:100%;min-height:44px}.registration-submit:disabled{opacity:.6;cursor:wait}.registration-note{margin-top:12px!important;color:#7a8790!important;font-size:.74rem!important}.registration-success{max-width:760px;margin:0 auto}.registration-success p{max-width:650px}.registration-actions{display:flex;gap:10px;margin-top:22px}.registration-closed{display:grid;gap:5px;margin-top:24px;padding:16px;border-left:3px solid var(--red);background:#fbf4f4;color:var(--ink-soft)}.registration-closed strong{color:var(--navy)}.registration-side{background:var(--navy-dark);color:#fff;padding:26px}.registration-side h2{font-size:1.55rem;margin:6px 0 16px}.registration-side ol{padding-left:20px;color:#d7e6ef}.registration-side li{padding:7px 0 7px 4px}.registration-side li::marker{color:var(--sky)}
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:260px 1fr;gap:40px;padding:44px 28px 70px}@media(max-width:820px){.layout{grid-template-columns:1fr}}
+aside.sidebar details{border-bottom:1px solid #d3e2ec}aside.sidebar summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;padding:13px 4px;font-weight:600;font-size:.98rem;color:var(--navy)}aside.sidebar summary::-webkit-details-marker{display:none}aside.sidebar summary::after{content:"▾";color:var(--red);transition:transform .15s}aside.sidebar details[open] summary::after{transform:rotate(180deg)}aside.sidebar ul{list-style:none;padding:0 4px 14px 6px}aside.sidebar li a{display:block;padding:6px 0 6px 16px;font-size:.92rem;color:var(--ink-soft);border-left:2px solid #d3e2ec}aside.sidebar li a:hover{color:var(--navy);border-color:var(--red)}
+main h2{font-size:1.5rem;font-weight:600;color:var(--navy);margin-bottom:22px}.news-card{position:relative;background:#fff;border:1px solid #d3e2ec;padding:24px;margin-bottom:20px;overflow:hidden}.news-card::before{content:"";position:absolute;top:0;right:0;width:0;height:0;border-style:solid;border-width:0 46px 46px 0;border-color:transparent var(--red) transparent transparent}.news-card .tag{font-family:'IBM Plex Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--red);margin-bottom:8px;display:block}.news-card h3{font-size:1.18rem;font-weight:600;margin-bottom:10px;color:var(--ink);max-width:38ch}.news-card p{color:var(--ink-soft);font-size:.95rem;max-width:56ch}.news-card .meta{margin-top:14px;display:flex;gap:18px;font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--navy)}.news-card .meta span.mono{font-family:'IBM Plex Mono',monospace}
+.admin-shell{max-width:640px;margin:0 auto;padding:60px 28px}.admin-card{background:#fff;border:1px solid #d3e2ec;padding:32px}.admin-card h1{font-size:1.6rem;color:var(--navy);margin-bottom:22px}.field{margin-bottom:16px}.field label{display:block;font-size:.85rem;font-weight:600;color:var(--navy);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}.field input,.field textarea,.field select{width:100%;padding:10px 12px;border:1px solid #d3e2ec;font-family:inherit;font-size:.95rem;background:var(--ivory)}.field textarea{min-height:90px;resize:vertical}.btn-danger{background:transparent;color:var(--red);border:1px solid var(--red);padding:6px 12px;font-size:.82rem;cursor:pointer}.error-msg{color:var(--red);font-size:.88rem;margin-top:10px}.admin-list-item{border-bottom:1px solid #d3e2ec;padding:14px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}.admin-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+.admin-hero{background:radial-gradient(circle at 88% 15%,rgba(191,224,240,.16),transparent 32%),radial-gradient(circle at 72% 100%,rgba(181,38,44,.2),transparent 35%),var(--navy);color:#fff}.admin-hero-inner{max-width:1180px;margin:0 auto;padding:42px 28px 52px}.admin-hero h1{font-size:clamp(2.4rem,5vw,4rem);line-height:1;margin:5px 0 14px}.admin-hero p{color:#d7e6ef;max-width:700px}.admin-main{max-width:1180px;margin:0 auto;padding:42px 28px 72px}.admin-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}.admin-stat{background:#fff;border:1px solid #d3e2ec;padding:18px 20px}.admin-stat span{display:block;color:#72808a;font:500 .65rem 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em}.admin-stat strong{display:block;color:var(--navy);font:600 2rem 'Fraunces',serif;margin-top:4px}.admin-panel{background:#fff;border:1px solid #d3e2ec;box-shadow:0 8px 24px rgba(18,40,62,.045);overflow:hidden}.admin-panel-head{display:flex;justify-content:space-between;align-items:end;gap:20px;padding:24px;border-bottom:1px solid #e3edf2}.admin-panel-head h2{font-size:1.8rem;color:var(--navy);margin-top:4px}.admin-result-count{font:500 .68rem 'IBM Plex Mono',monospace;color:#72808a;text-transform:uppercase}.admin-filters{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px 24px;background:#fbfcfd;border-bottom:1px solid #e3edf2}.admin-filters label{display:grid;gap:7px;color:var(--navy);font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em}.admin-filters select{padding:10px 12px;border:1px solid #cbdbe5;background:#fff;color:var(--ink);font:inherit}.admin-message{margin:18px 24px 0;padding:11px 13px;font-size:.83rem;border-left:3px solid var(--navy);background:#f5f8fa}.admin-message.success{border-color:#287044}.admin-message.error{border-color:var(--red);color:var(--red)}.admin-table-wrap{overflow-x:auto}.admin-table{width:100%;border-collapse:collapse;min-width:900px}.admin-table th{padding:11px 18px;text-align:left;background:#fbfcfd;color:#72808a;border-top:1px solid #edf2f5;border-bottom:1px solid #e3edf2;font:500 .62rem 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.07em}.admin-table td{padding:14px 18px;border-bottom:1px solid #edf2f5;font-size:.86rem;vertical-align:middle}.admin-table tbody tr:hover{background:#f9fbfc}.admin-status.status-registered{border-color:#d8c78e;color:#765e13;background:#fffaf0}.admin-status.status-confirmed{border-color:#b9d8c5;color:#287044;background:#f4fbf6}.admin-status.status-declined{border-color:#e4b9bc;color:var(--red);background:#fff6f6}.admin-actions{display:flex;gap:6px;flex-wrap:wrap}.admin-actions button{border:1px solid #cbdbe5;background:#fff;color:var(--navy);padding:6px 9px;font:600 .68rem 'Work Sans',sans-serif;cursor:pointer}.admin-actions button:hover{border-color:var(--navy)}.admin-actions button.danger{color:var(--red);border-color:#e4b9bc}.admin-actions button.ghost{color:#68757e}.admin-actions button:disabled{opacity:.5;cursor:wait}.admin-empty{text-align:center;color:#72808a;padding:35px!important}.admin-gate{background:#fff;border:1px solid #d3e2ec;padding:32px;box-shadow:0 8px 24px rgba(18,40,62,.045)}.admin-gate h1{color:var(--navy);font-size:2rem;margin:5px 0 12px}.admin-gate p{color:var(--ink-soft);margin-bottom:20px}.admin-loading{color:var(--ink-soft);padding:40px 0}
+@media(max-width:900px){.registration-layout{grid-template-columns:1fr}.registration-side{order:2}.admin-stat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.top-inner{padding:16px 18px;align-items:flex-start}.primary{gap:14px;font-size:.67rem}.dgp-hero-inner{grid-template-columns:1fr;padding:44px 18px 42px}.season-card{max-width:360px}.dgp-main{padding:36px 18px 54px}.dgp-intro{align-items:flex-start;flex-direction:column}.player-count{text-align:left;border-left:0;border-top:1px solid #d3e2ec;padding:14px 0 0;min-width:0}.ranking-grid,.tournament-grid{grid-template-columns:1fr}.ranking-card-featured{grid-column:auto}.ranking-card-head{padding:18px}.ranking-table th,.ranking-table td{padding-left:18px;padding-right:18px}.brand{font-size:1.05rem}.primary{flex-wrap:wrap;justify-content:flex-end}.tournaments-hero-inner,.tournaments-main,.tournament-detail-inner,.tournament-detail-main,.registration-hero-inner,.registration-main,.admin-hero-inner,.admin-main{padding-left:18px;padding-right:18px}.tournaments-heading{align-items:flex-start;flex-direction:column}.tournament-card{padding:20px}.tournament-card-top{align-items:flex-start;flex-direction:column}.tournament-actions,.registration-actions{flex-direction:column}.btn-primary,.btn-secondary{width:100%}.registration-card{padding:22px}.registration-side{padding:22px}.admin-filters{grid-template-columns:1fr;padding:16px 18px}.admin-panel-head{padding:20px 18px}.admin-stat-grid{gap:10px}.admin-stat{padding:15px}.admin-stat strong{font-size:1.6rem}.admin-shell{padding:40px 18px}}
