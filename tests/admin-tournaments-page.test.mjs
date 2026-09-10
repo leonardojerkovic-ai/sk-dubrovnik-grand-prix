@@ -6,22 +6,12 @@ const page = fs.readFileSync(new URL('../app/admin/turniri/page.js', import.meta
 
 test('Phase 3A admin tournament page exposes required operations', () => {
   for (const marker of [
-    "supabase.from('tournaments')",
-    "supabase.from('seasons')",
-    'validateForm',
-    'startCreate',
-    'startEdit',
-    'saveTournament',
-    'togglePublished',
-    'deleteTournament',
-    'Sve sezone',
-    'Svi statusi',
-    'Sve kategorije',
-    'Sve faze',
-  ]) assert.match(page, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    "supabase.from('tournaments')", "supabase.from('seasons')", 'validateForm', 'startCreate', 'startEdit',
+    'saveTournament', 'togglePublished', 'deleteTournament', 'Sve sezone', 'Svi statusi', 'Sve kategorije', 'Sve faze',
+  ]) assert.ok(page.includes(marker), `missing marker: ${marker}`);
 });
 
-test('Phase 3A validates date, deadline and capacity fields', () => {
+test('Phase 3A validates dates, deadline, capacity and rounds', () => {
   assert.match(page, /Datum završetka ne može biti prije početka/);
   assert.match(page, /Rok prijave mora biti prije početka turnira/);
   assert.match(page, /Maksimalan broj igrača mora biti cijeli broj/);
