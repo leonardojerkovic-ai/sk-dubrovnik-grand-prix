@@ -4,6 +4,31 @@ import { supabase } from '../../../lib/supabaseClient';
 
 export const revalidate = 30;
 
+const categoryLabels = {
+  GENERAL: 'Opći GP',
+  S65: 'S65',
+  S50: 'S50',
+  U1800: 'U1800',
+  U20: 'U20',
+  U16: 'U16',
+  U12: 'U12',
+  WOMEN: 'Žene',
+  ACADEMY: 'Akademija',
+};
+
+function categoryLabel(code) {
+  return categoryLabels[code] || code || 'Opći GP';
+}
+
+function formatDate(value) {
+  if (!value) return '—';
+  return new Intl.DateTimeFormat('hr-HR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(value));
+}
+
+function average(values) {
+  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+}
+
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const { data: player } = await supabase.from('players').select('full_name').eq('id', id).maybeSingle();
@@ -32,8 +57,7 @@ export default async function PlayerProfilePage({ params }) {
     supabase
       .from('tournament_results')
       .select('tournament_id, final_rank, score, games_played, wins, draws, losses, points_awarded, rating_standard, rating_rapid, rating_blitz, rating_used, tournaments(name, starts_at, season_id, tournament_scope, category_code, event_stage, status, seasons(name, code))')
-      .eq('player_id', playerId)
-      .order('tournament_id', { ascending: false }),
+      .eq('player_id', playerId),
     supabase
       .from('player_ratings')
       .select('effective_month, fide_standard, fide_rapid, fide_blitz')
@@ -41,26 +65,56 @@ export default async function PlayerProfilePage({ params }) {
       .order('effective_month', { ascending: false }),
   ]);
 
-  const rows = results || [];
+  const rows = [...(results || [])].sort((a, b) => new Date(a.tournaments?.starts_at || 0) - new Date(b.tournaments?.starts_at || 0));
   const games = rows.reduce((sum, r) => sum + Number(r.games_played || 0), 0);
   const wins = rows.reduce((sum, r) => sum + Number(r.wins || 0), 0);
   const draws = rows.reduce((sum, r) => sum + Number(r.draws || 0), 0);
   const losses = rows.reduce((sum, r) => sum + Number(r.losses || 0), 0);
   const score = rows.reduce((sum, r) => sum + Number(r.score || 0), 0);
   const gpPoints = rows.reduce((sum, r) => sum + Number(r.points_awarded || 0), 0);
-  const podiums = rows.filter((r) => Number(r.final_rank) >= 1 && Number(r.final_rank) <= 3).length;
+  const rankedRows = rows.filter((r) => Number.isFinite(Number(r.final_rank)) && Number(r.final_rank) > 0);
+  const bestPlacement = rankedRows.length ? Math.min(...rankedRows.map((r) => Number(r.final_rank))) : null;
+  const podiums = rankedRows.filter((r) => Number(r.final_rank) <= 3).length;
+  const firstPlaces = rankedRows.filter((r) => Number(r.final_rank) === 1).length;
+  const secondPlaces = rankedRows.filter((r) => Number(r.final_rank) === 2).length;
+  const thirdPlaces = rankedRows.filter((r) => Number(r.final_rank) === 3).length;
+  const averagePlacement = average(rankedRows.map((r) => Number(r.final_rank)));
+  const winRate = games ? (wins / games) * 100 : 0;
 
   const seasons = new Map();
   for (const row of rows) {
     const season = row.tournaments?.seasons;
     const key = season?.code || String(row.tournaments?.season_id || 'nepoznato');
-    const current = seasons.get(key) || { name: season?.name || 'Sezona', events: 0, games: 0, points: 0, wins: 0 };
+    const current = seasons.get(key) || { code: key, name: season?.name || 'Sezona', events: 0, games: 0, points: 0, wins: 0, draws: 0, losses: 0, ranks: [] };
     current.events += 1;
     current.games += Number(row.games_played || 0);
     current.points += Number(row.points_awarded || 0);
     current.wins += Number(row.wins || 0);
+    current.draws += Number(row.draws || 0);
+    current.losses += Number(row.losses || 0);
+    if (Number(row.final_rank) > 0) current.ranks.push(Number(row.final_rank));
     seasons.set(key, current);
   }
+  const seasonRows = Array.from(seasons.values()).reverse();
+
+  const categories = [];
+  const seenCategories = new Set();
+  for (const row of rows) {
+    const code = row.tournaments?.category_code || row.tournaments?.tournament_scope || 'GENERAL';
+    if (!seenCategories.has(code)) {
+      seenCategories.add(code);
+      categories.push({ code, label: categoryLabel(code), first: row.tournaments?.starts_at });
+    }
+  }
+
+  const successfulTournaments = [...rows]
+    .filter((r) => Number(r.points_awarded || 0) > 0 || Number(r.final_rank) > 0)
+    .sort((a, b) => {
+      const points = Number(b.points_awarded || 0) - Number(a.points_awarded || 0);
+      if (points) return points;
+      return Number(a.final_rank || 99999) - Number(b.final_rank || 99999);
+    })
+    .slice(0, 5);
 
   return (
     <main>
@@ -87,13 +141,36 @@ export default async function PlayerProfilePage({ params }) {
 
         <div className="public-detail-grid">
           <section className="public-panel">
-            <div className="section-heading"><span className="eyebrow">POVIJEST NASTUPA</span><h2>Turniri</h2></div>
-            {!rows.length ? <p>Nema evidentiranih nastupa.</p> : <div className="public-table-wrap"><table className="public-table"><thead><tr><th>Turnir</th><th>Sezona</th><th>Mjesto</th><th>Rezultat</th><th>GP</th></tr></thead><tbody>{rows.map((r, i) => <tr key={`${r.tournament_id}-${i}`}><td>{r.tournaments?.name || 'Turnir'}</td><td>{r.tournaments?.seasons?.name || '—'}</td><td>{r.final_rank ?? '—'}</td><td>{r.score ?? '—'} ({r.wins ?? 0}-{r.draws ?? 0}-{r.losses ?? 0})</td><td>{Number(r.points_awarded || 0)}</td></tr>)}</tbody></table></div>}
+            <div className="section-heading"><span className="eyebrow">REKORD</span><h2>Najbolji plasman</h2></div>
+            <div className="public-stat-grid">
+              <div className="public-stat-card"><span>Najbolji plasman</span><strong>{bestPlacement ?? '—'}</strong></div>
+              <div className="public-stat-card"><span>Prosjek plasmana</span><strong>{averagePlacement ? averagePlacement.toFixed(2) : '—'}</strong></div>
+              <div className="public-stat-card"><span>1. mjesta</span><strong>{firstPlaces}</strong></div>
+              <div className="public-stat-card"><span>2. mjesta</span><strong>{secondPlaces}</strong></div>
+              <div className="public-stat-card"><span>3. mjesta</span><strong>{thirdPlaces}</strong></div>
+              <div className="public-stat-card"><span>Postotak pobjeda</span><strong>{winRate.toFixed(1)}%</strong></div>
+            </div>
           </section>
 
           <section className="public-panel">
-            <div className="section-heading"><span className="eyebrow">SEZONSKE STATISTIKE</span><h2>Napredak kroz sezone</h2></div>
-            {!seasons.size ? <p>Nema sezonskih podataka.</p> : <div className="public-season-list">{Array.from(seasons.values()).map((s) => <div className="public-season-row" key={s.name}><strong>{s.name}</strong><span>{s.events} nastupa · {s.games} partija · {s.wins} pobjeda · {s.points.toFixed(2)} GP</span></div>)}</div>}
+            <div className="section-heading"><span className="eyebrow">NAJUSPJEŠNIJI NASTUPI</span><h2>Najbolji turniri</h2></div>
+            {!successfulTournaments.length ? <p>Nema evidentiranih turnira s rezultatima.</p> : <div className="public-season-list">{successfulTournaments.map((r, i) => <div className="public-season-row" key={`${r.tournament_id}-${i}`}><strong>{r.tournaments?.name || 'Turnir'}</strong><span>{formatDate(r.tournaments?.starts_at)} · {r.final_rank ? `${r.final_rank}. mjesto` : 'plasman —'} · {Number(r.points_awarded || 0)} GP</span></div>)}</div>}
+          </section>
+
+          <section className="public-panel">
+            <div className="section-heading"><span className="eyebrow">SEZONSKI TREND</span><h2>Napredak kroz sezone</h2></div>
+            {!seasonRows.length ? <p>Nema sezonskih podataka.</p> : <div className="public-table-wrap"><table className="public-table"><thead><tr><th>Sezona</th><th>Nastupi</th><th>Partije</th><th>GP</th><th>Prosjek plasmana</th><th>W-D-L</th></tr></thead><tbody>{seasonRows.map((s) => <tr key={s.code}><td>{s.name}</td><td>{s.events}</td><td>{s.games}</td><td>{s.points.toFixed(2)}</td><td>{s.ranks.length ? average(s.ranks).toFixed(2) : '—'}</td><td>{s.wins}-{s.draws}-{s.losses}</td></tr>)}</tbody></table></div>}
+          </section>
+
+          <section className="public-panel">
+            <div className="section-heading"><span className="eyebrow">KATEGORIJSKI NAPREDAK</span><h2>Kategorije u kojima je nastupao</h2></div>
+            {!categories.length ? <p>Nema evidentiranih kategorijskih nastupa.</p> : <div className="public-player-grid">{categories.map((category) => <div className="public-player-card" key={category.code}><div><strong>{category.label}</strong><span>Prvi evidentirani nastup: {formatDate(category.first)}</span></div></div>)}</div>}
+            <p className="public-muted">Kategorije su izvedene iz stvarno evidentiranih turnirskih nastupa; sustav ne stvara zasebnu povijest kategorija.</p>
+          </section>
+
+          <section className="public-panel">
+            <div className="section-heading"><span className="eyebrow">POVIJEST NASTUPA</span><h2>Kronologija</h2></div>
+            {!rows.length ? <p>Nema evidentiranih nastupa.</p> : <div className="public-table-wrap"><table className="public-table"><thead><tr><th>Datum</th><th>Turnir</th><th>Kategorija</th><th>Mjesto</th><th>Rezultat</th><th>GP</th></tr></thead><tbody>{rows.map((r, i) => <tr key={`${r.tournament_id}-${i}`}><td>{formatDate(r.tournaments?.starts_at)}</td><td>{r.tournaments?.name || 'Turnir'}</td><td>{categoryLabel(r.tournaments?.category_code || r.tournaments?.tournament_scope)}</td><td>{r.final_rank ?? '—'}</td><td>{r.score ?? '—'} ({r.wins ?? 0}-{r.draws ?? 0}-{r.losses ?? 0})</td><td>{Number(r.points_awarded || 0)}</td></tr>)}</tbody></table></div>}
           </section>
 
           <section className="public-panel">
