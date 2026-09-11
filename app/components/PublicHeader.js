@@ -4,6 +4,7 @@ export default function PublicHeader({ active = '' }) {
     ['/o-nama', 'O nama'],
     ['/turniri', 'Turniri'],
     ['/poredak', 'Ljestvice'],
+    ['/igraci', 'Igrači'],
     ['/rezultati', 'Rezultati'],
     ['/vijesti', 'Vijesti'],
     ['/faq', 'FAQ'],
